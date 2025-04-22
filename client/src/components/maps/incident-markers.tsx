@@ -28,18 +28,31 @@ export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
       
       // Create and attach popup
       const popupContent = `
-        <div class="p-2">
-          <div class="font-bold">${formatIncidentType(incident.type)}</div>
-          <div class="text-sm text-gray-600">${formatTimestamp(incident.createdAt)}</div>
-          ${incident.comment ? `<div class="mt-1">${incident.comment}</div>` : ''}
-          <div class="mt-2 flex items-center gap-2 text-sm">
-            <span class="material-icons text-green-500 text-xs">thumb_up</span>
+      <div class="p-3 w-[220px] text-sm font-sans">
+        <div class="font-semibold text-base text-black dark:text-white mb-1">
+          ${formatIncidentType(incident.type)}
+        </div>
+        <div class="text-gray-500 dark:text-gray-300 mb-2">
+          ${formatTimestamp(incident.createdAt)}
+        </div>
+        ${incident.comment ? `
+          <div class="text-gray-800 dark:text-gray-100 italic mb-2 border-l-2 pl-2 border-primary">
+            "${incident.comment}"
+          </div>
+        ` : ''}
+        <div class="flex items-center justify-between mt-2">
+          <div class="flex items-center gap-1 text-green-600">
+            <span class="material-icons text-sm">thumb_up</span>
             <span>${incident.confirmed}</span>
-            <span class="material-icons text-red-500 text-xs">thumb_down</span>
+          </div>
+          <div class="flex items-center gap-1 text-red-600">
+            <span class="material-icons text-sm">thumb_down</span>
             <span>${incident.refuted}</span>
           </div>
         </div>
-      `;
+      </div>
+    `;
+    
       
       const popup = createPopup(popupContent);
       
@@ -47,8 +60,13 @@ export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
       
       // Add click event to show popup
       marker.getElement().addEventListener('click', () => {
-        marker.togglePopup();
+        if (marker.isPopupOpen()) {
+          marker.closePopup();
+        } else {
+          marker.openPopup();
+        }
       });
+      
       
       return marker;
     });

@@ -107,17 +107,10 @@ export function createIncidentMarker(
   // Add icon
   const icon = document.createElement('span');
   icon.className = 'material-icons';
-  icon.style.fontSize = '16px';
+  icon.style.fontSize = '10px';
   icon.textContent = iconClass;
   el.appendChild(icon);
   
-  // Add hover effect
-  el.onmouseover = () => {
-    el.style.transform = 'scale(1.1)';
-  };
-  el.onmouseout = () => {
-    el.style.transform = 'scale(1)';
-  };
   
   return new window.tt.Marker({ element: el })
     .setLngLat(position)
@@ -158,13 +151,7 @@ export async function calculateRoute(
     };
     
     // Add avoid options if specified
-    if (options.avoidTolls) {
-      routingOptions.avoid = 'toll';
-    }
-    
-    if (options.avoidHighways) {
-      routingOptions.avoid = options.avoidTolls ? 'toll,motorway' : 'motorway';
-    }
+
     
     const response = await window.tt.services.calculateRoute(routingOptions);
     return response;
@@ -186,7 +173,7 @@ export function drawRoute(map: TTMap, route: any, color: string = '#3F51B5'): vo
   
   // Check if we have the route data in the correct format
   let geometry;
-  if (route.legs && route.legs[0] && route.legs[0].points) {
+  if (route.legs?.[0]?.points) {
     // TomTom routing API format
     geometry = {
       type: 'LineString',

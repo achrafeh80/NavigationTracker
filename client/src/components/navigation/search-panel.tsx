@@ -162,8 +162,6 @@ export default function SearchPanel() {
         destCoords as [number, number],
         {
           routeType: routeOptions as 'fastest' | 'shortest' | 'eco',
-          avoidTolls: routeOptions === 'no-tolls',
-          avoidHighways: routeOptions === 'avoid-highways'
         }
       );
 
@@ -340,22 +338,6 @@ export default function SearchPanel() {
                 onClick={() => handleRouteTypeSelection("eco")}
               >
                 Eco-friendly
-              </Button>
-              <Button
-                variant={routeOptions === "no-tolls" ? "default" : "outline"}
-                size="sm"
-                className="rounded-full px-3 py-1 text-sm"
-                onClick={() => handleRouteTypeSelection("no-tolls")}
-              >
-                No Tolls
-              </Button>
-              <Button
-                variant={routeOptions === "avoid-highways" ? "default" : "outline"}
-                size="sm"
-                className="rounded-full px-3 py-1 text-sm"
-                onClick={() => handleRouteTypeSelection("avoid-highways")}
-              >
-                Avoid Highways
               </Button>
             </div>
           </div>

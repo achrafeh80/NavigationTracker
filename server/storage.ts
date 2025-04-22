@@ -17,7 +17,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(name: InsertUser): Promise<User>;
   
   // Incident operations
   createIncident(incident: InsertIncident): Promise<Incident>;

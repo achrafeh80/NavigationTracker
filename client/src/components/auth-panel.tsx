@@ -20,7 +20,7 @@ const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  fullName: z.string().optional(),
+  name: z.string().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -46,7 +46,7 @@ export default function AuthPanel() {
       username: "",
       email: "",
       password: "",
-      fullName: "",
+      name: "",
     },
   });
 
@@ -181,7 +181,7 @@ export default function AuthPanel() {
 
                 <FormField
                   control={registerForm.control}
-                  name="fullName"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Full Name (Optional)</FormLabel>
