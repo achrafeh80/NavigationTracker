@@ -1,46 +1,24 @@
 import { useState } from "react";
 import { useNavigationContext } from "@/context/navigation-context";
-import { X, VolumeX, Volume2, MoreVertical, AlertTriangle } from "lucide-react";
 import { formatDuration, formatDistance, getETA } from "@/lib/tomtom";
 import ReportIncidentModal from "@/components/incidents/report-incident-modal";
+import AllManeuversModal from "@/components/navigation/AllManeuversModal";
 
 export default function NavigationPanel() {
-  const { activeRoute, stopNavigation } = useNavigationContext();
-  const [isMuted, setIsMuted] = useState(false);
+  const { activeRoute, stopNavigation, setShowAllManeuvers } = useNavigationContext();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
-  const handleStopNavigation = () => {
-    stopNavigation();
-  };
-
-  const handleToggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
-  const handleReportIncident = () => {
-    setIsReportModalOpen(true);
-  };
-
-  // Make sure we have a route to display
   if (!activeRoute) return null;
 
-  // Get route summary and maneuver information
   const { summary } = activeRoute;
   const guidance = activeRoute.guidance?.instructions || [];
-  
-  // Current maneuver is the first one in the list
-  const currentManeuver = guidance.length > 0 ? guidance[0] : null;
-  
-  // Next maneuvers are the next two in the list
-  const nextManeuvers = guidance.slice(1, 3);
 
-  // Get ETA based on travel time
+  const currentManeuver = guidance.length > 0 ? guidance[0] : null;
+  const nextManeuvers = guidance.slice(1, 3);
   const eta = getETA(summary.travelTimeInSeconds);
 
-  // Helper to get maneuver icon
   const getManeuverIcon = (maneuver: any) => {
     const type = maneuver.maneuverType || 'STRAIGHT';
-    
     switch (type) {
       case 'LEFT':
       case 'KEEP_LEFT':
@@ -65,9 +43,9 @@ export default function NavigationPanel() {
 
   return (
     <>
-      <div className="absolute bottom-0 left-0 right-0 bg-white shadow-lg rounded-t-xl z-20">
+      <div className="absolute bottom-0 left-20 right-20 bg-white shadow-lg rounded-t-xl z-20">
         <div className="p-4">
-          {/* Top Bar with ETA and Close Button */}
+          {/* Top Bar */}
           <div className="flex justify-between items-center mb-4">
             <div>
               <div className="font-medium text-sm text-neutral-600">Estimated arrival</div>
@@ -75,12 +53,20 @@ export default function NavigationPanel() {
                 {eta} ({formatDuration(summary.travelTimeInSeconds)})
               </div>
             </div>
-            <button 
-              className="text-neutral-500 hover:text-neutral-700"
-              onClick={handleStopNavigation}
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex gap-2">
+              <button 
+                className="px-3 py-1 text-white bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium"
+                onClick={stopNavigation}
+              >
+                Stop
+              </button>
+              <button
+                className="px-3 py-1 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition"
+                onClick={() => setShowAllManeuvers(true)}
+              >
+              Navigation steps
+              </button>
+            </div>
           </div>
 
           {/* Current Maneuver */}
@@ -100,63 +86,32 @@ export default function NavigationPanel() {
           )}
 
           {/* Next Maneuvers */}
-          <div className="flex flex-col gap-3">
-            {nextManeuvers.map((maneuver, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="bg-neutral-200 rounded-full w-8 h-8 flex items-center justify-center text-neutral-700">
-                  <span className="material-icons text-sm">{getManeuverIcon(maneuver)}</span>
-                </div>
-                <div className="flex-grow">
-                  <div className="text-sm">
-                    {maneuver.distanceFromPreviousInstruction && 
-                      `Continue for ${formatDistance(maneuver.distanceFromPreviousInstruction)}, then `}
-                    {maneuver.message}
+          <div className="max-h-80 overflow-y-auto pr-2">
+            <div className="flex flex-col gap-3">
+              {nextManeuvers.map((maneuver: any, index: number) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="bg-neutral-200 rounded-full w-8 h-8 flex items-center justify-center text-neutral-700">
+                    <span className="material-icons text-sm">{getManeuverIcon(maneuver)}</span>
+                  </div>
+                  <div className="flex-grow">
+                    <div className="text-sm">
+                      {maneuver.distanceFromPreviousInstruction && 
+                        `Continue for ${formatDistance(maneuver.distanceFromPreviousInstruction)}, then `}
+                      {maneuver.message}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* Bottom Action Bar */}
-        <div className="flex justify-between items-center bg-neutral-100 p-3">
-          <button 
-            className="flex items-center gap-1 text-neutral-700 hover:text-primary transition-colors px-2"
-          >
-            <MoreVertical className="h-5 w-5" />
-            <span className="text-sm">Options</span>
-          </button>
-
-          <button 
-            className="flex items-center gap-1 text-neutral-700 hover:text-primary transition-colors px-2"
-            onClick={handleToggleMute}
-          >
-            {isMuted ? (
-              <>
-                <VolumeX className="h-5 w-5" />
-                <span className="text-sm">Unmute</span>
-              </>
-            ) : (
-              <>
-                <Volume2 className="h-5 w-5" />
-                <span className="text-sm">Mute</span>
-              </>
-            )}
-          </button>
-
-          <button 
-            className="flex items-center gap-1 text-status-alert px-2"
-            onClick={handleReportIncident}
-          >
-            <AlertTriangle className="h-5 w-5" />
-            <span className="text-sm">Report</span>
-          </button>
         </div>
       </div>
 
       {isReportModalOpen && (
         <ReportIncidentModal onClose={() => setIsReportModalOpen(false)} />
       )}
+
+      <AllManeuversModal />
     </>
   );
 }

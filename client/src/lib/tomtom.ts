@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-const API_KEY = import.meta.env.VITE_TOMTOM_API_KEY || 'G3WCiiFF89kmTHGsU4wFI4hTpNXScR7G'; // Default test key
+const API_KEY = import.meta.env.VITE_TOMTOM_API_KEY || 'G3WCiiFF89kmTHGsU4wFI4hTpNXScR7G';
 
 // Map instance type definition
 export type TTMap = any;
@@ -39,7 +39,7 @@ export function initMap(container: string): Promise<TTMap> {
         resolve(map);
       });
     } catch (error) {
-      reject(error);
+      reject(error instanceof Error ? error : new Error(String(error)));
     }
   });
 }

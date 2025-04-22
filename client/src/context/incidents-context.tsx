@@ -27,7 +27,7 @@ interface IncidentsContextType {
 
 const IncidentsContext = createContext<IncidentsContextType | undefined>(undefined);
 
-export function IncidentsProvider({ children }: { children: ReactNode }) {
+export function IncidentsProvider({ children }: { readonly children: ReactNode }) {
   const [incidentAlerts, setIncidentAlerts] = useState<IncidentAlert[]>([]);
   const { map } = useMapContext();
   const { user } = useAuth();

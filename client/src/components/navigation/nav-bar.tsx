@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link} from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
@@ -42,7 +43,7 @@ export default function NavBar() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-1 text-neutral-700 hover:text-primary transition-colors">
               <span className="material-icons">account_circle</span>
-              <span className="hidden md:inline text-sm">{user?.fullName || user?.username}</span>
+              <span className="hidden md:inline text-sm">{user?.name || user?.username}</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -52,9 +53,11 @@ export default function NavBar() {
             <DropdownMenuItem className="cursor-pointer">
               Your Routes
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Statistics
-            </DropdownMenuItem>
+            <Link href="/statistics">
+              <DropdownMenuItem className="cursor-pointer">
+                Statistics
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="cursor-pointer"

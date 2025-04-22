@@ -22,7 +22,7 @@ export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
     const newMarkers = incidents.map(incident => {
       const marker = createIncidentMarker(
         map,
-        [incident.longitude, incident.latitude],
+        [parseFloat(incident.longitude), parseFloat(incident.latitude)],
         incident.type
       );
       
@@ -31,12 +31,12 @@ export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
         <div class="p-2">
           <div class="font-bold">${formatIncidentType(incident.type)}</div>
           <div class="text-sm text-gray-600">${formatTimestamp(incident.createdAt)}</div>
-          ${incident.description ? `<div class="mt-1">${incident.description}</div>` : ''}
+          ${incident.comment ? `<div class="mt-1">${incident.comment}</div>` : ''}
           <div class="mt-2 flex items-center gap-2 text-sm">
             <span class="material-icons text-green-500 text-xs">thumb_up</span>
-            <span>${incident.confirmedCount}</span>
+            <span>${incident.confirmed}</span>
             <span class="material-icons text-red-500 text-xs">thumb_down</span>
-            <span>${incident.deniedCount}</span>
+            <span>${incident.refuted}</span>
           </div>
         </div>
       `;

@@ -218,21 +218,24 @@ export default function SearchPanel() {
                     <span className="ml-2">Recherche en cours...</span>
                   </div>
                 ) : (
-                  <ul className="py-1">
+                  <ul className="py-1 divide-y divide-gray-200">
                     {originSuggestions.map((suggestion, index) => (
-                      <li 
-                        key={index}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSuggestionClick(suggestion, true);
-                        }}
-                      >
-                        <MapPin className="h-4 w-4 text-primary mr-2" />
-                        <div>
-                          <p className="font-semibold">{suggestion.poi?.name || suggestion.address.freeformAddress}</p>
-                          <p className="text-sm text-gray-500">{formatAddress(suggestion)}</p>
-                        </div>
+                      <li key={index}>
+                        <button
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-start gap-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSuggestionClick(suggestion, true);
+                          }}
+                        >
+                          <MapPin className="h-5 w-5 text-primary mt-1" />
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {suggestion.poi?.name || suggestion.address.freeformAddress}
+                            </p>
+                            <p className="text-sm text-gray-500">{formatAddress(suggestion)}</p>
+                          </div>
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -269,21 +272,24 @@ export default function SearchPanel() {
                     <span className="ml-2">Recherche en cours...</span>
                   </div>
                 ) : (
-                  <ul className="py-1">
+                  <ul className="py-1 divide-y divide-gray-200">
                     {destinationSuggestions.map((suggestion, index) => (
-                      <li 
-                        key={index}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSuggestionClick(suggestion, false);
-                        }}
-                      >
-                        <MapPin className="h-4 w-4 text-secondary-DEFAULT mr-2" />
-                        <div>
-                          <p className="font-semibold">{suggestion.poi?.name || suggestion.address.freeformAddress}</p>
-                          <p className="text-sm text-gray-500">{formatAddress(suggestion)}</p>
-                        </div>
+                      <li key={index}>
+                        <button
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-start gap-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSuggestionClick(suggestion, false);
+                          }}
+                        >
+                          <MapPin className="h-5 w-5 text-secondary-DEFAULT mt-1" />
+                          <div>
+                            <p className="font-medium text-gray-800">
+                              {suggestion.poi?.name || suggestion.address.freeformAddress}
+                            </p>
+                            <p className="text-sm text-gray-500">{formatAddress(suggestion)}</p>
+                          </div>
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -310,7 +316,7 @@ export default function SearchPanel() {
         {/* Route Options */}
         {isRouteOptionsVisible && (
           <div className="mt-4 route-options">
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4 ">
               <Button
                 variant={routeOptions === "fastest" ? "default" : "outline"}
                 size="sm"

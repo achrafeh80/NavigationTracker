@@ -10,11 +10,13 @@ import { ProtectedRoute } from "./lib/protected-route";
 import { MapProvider } from "@/context/map-context";
 import { NavigationProvider } from "@/context/navigation-context";
 import { IncidentsProvider } from "@/context/incidents-context";
+import StatisticsPage from "@/pages/statistics-page"; 
 
 function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={HomePage} />
+      <Route path="/statistics" component={StatisticsPage} /> 
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

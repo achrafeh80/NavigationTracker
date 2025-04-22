@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import Sidebar from '@/components/layout/Sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,48 +21,76 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, TrendingUp, AlertCircle, Clock } from 'lucide-react';
 
 export default function StatisticsPage() {
+  useAuth();
   const { user } = useAuth();
-  const [isMobile, setIsMobile] = useState(false);
+  console.log("User:", user);
+
+  
+  // Define the type for incident statistics
+  interface IncidentStats {
+    byType: {
+      accident: number;
+      traffic: number;
+      police: number;
+      closed_road: number;
+      construction: number;
+      obstacle: number;
+    };
+    active: number;
+    resolved: number;
+    total: number;
+    last24Hours: number;
+    averageConfirmations: number;
+    averageRefutations: number;
+  }
   
   // Get incident statistics
   const { 
     data: incidentStats, 
     isLoading: loadingIncidentStats 
-  } = useQuery({
+  } = useQuery<IncidentStats>({
     queryKey: ['/api/statistics/incidents'],
   });
   
   // Get user statistics
+  interface UserStats {
+    byType?: {
+      accident: number;
+      traffic: number;
+      police: number;
+      closed_road: number;
+      construction: number;
+      obstacle: number;
+    };
+    totalReported: number;
+    totalRoutes: number;
+  }
+
   const { 
     data: userStats, 
     isLoading: loadingUserStats 
-  } = useQuery({
+  } = useQuery<UserStats>({
     queryKey: ['/api/statistics/user'],
   });
   
   // Get traffic prediction data
+  interface PredictionData {
+    hourly: { hour: number; congestionRisk: number }[];
+    weekly: { day: string; congestionRisk: number }[];
+  }
+
   const { 
     data: predictionData, 
     isLoading: loadingPrediction 
-  } = useQuery({
+  } = useQuery<PredictionData>({
     queryKey: ['/api/statistics/prediction'],
   });
   
-  // Detect mobile devices
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+
   
   // Prepare incident type data for pie chart
   const prepareIncidentTypeData = () => {
-    if (!incidentStats || !incidentStats.byType) return [];
+    if (!incidentStats?.byType) return [];
     
     return [
       { name: 'Accidents', value: incidentStats.byType.accident, color: '#F44336' },
@@ -74,7 +101,7 @@ export default function StatisticsPage() {
       { name: 'Obstacles', value: incidentStats.byType.obstacle, color: '#FFC107' }
     ];
   };
-  
+
   // Prepare status data for pie chart
   const prepareStatusData = () => {
     if (!incidentStats) return [];
@@ -87,7 +114,7 @@ export default function StatisticsPage() {
   
   // Prepare user contribution data
   const prepareUserContributions = () => {
-    if (!userStats || !userStats.byType) return [];
+    if (!userStats?.byType) return [];
     
     return [
       { name: 'Accidents', count: userStats.byType.accident, color: '#F44336' },
@@ -105,13 +132,11 @@ export default function StatisticsPage() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-neutral-50">
-      <Sidebar isMobile={isMobile} />
-      
+    <div className="flex h-screen w-full overflow-auto bg-neutral-50">
+      <Sidebar />
       <main className="flex-1 overflow-y-auto">
-        {/* Add padding top for mobile header */}
-        <div className={`p-6 ${isMobile ? 'pt-20' : ''}`}>
-          <div className="max-w-6xl mx-auto">
+        <div className={`p-6 pt-16'}`}>
+        <div className="max-w-6xl mx-auto">
             <h1 className="text-3xl font-heading font-bold text-neutral-900 mb-6">Statistiques</h1>
             
             <Tabs defaultValue="traffic" className="w-full">
@@ -430,7 +455,7 @@ export default function StatisticsPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        {loadingUserStats ? <Loader2 className="h-4 w-4 animate-spin" /> : userStats?.totalReported * 10 || 0}
+                        {loadingUserStats ? <Loader2 className="h-4 w-4 animate-spin" /> : (userStats?.totalReported ?? 0) * 10}
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Points basés sur vos contributions

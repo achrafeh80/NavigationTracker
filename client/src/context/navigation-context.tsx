@@ -16,6 +16,8 @@ interface NavigationContextType {
   selectedRouteIndex: number | null;
   setSelectedRouteIndex: (index: number) => void;
   activeRoute: any | null;
+  showAllManeuvers: boolean;
+  setShowAllManeuvers: (visible: boolean) => void;
   
   // Loading state
   isLoading: boolean;
@@ -42,10 +44,12 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [isRouteResultsVisible, setRouteResultsVisible] = useState(false);
   const [isNavigationActive, setIsNavigationActive] = useState(false);
   
+  
   // Route data
   const [routes, setRoutes] = useState<any[]>([]);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
   const [activeRoute, setActiveRoute] = useState<any | null>(null);
+  const [showAllManeuvers, setShowAllManeuvers] = useState(false);
   
   // Loading state
   const [isLoading, setLoading] = useState(false);
@@ -160,7 +164,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     // Dessiner l'itinéraire et les marqueurs pour le mode navigation
     if (map) {
       try {
-        if (routeToNavigate && routeToNavigate.legs && routeToNavigate.legs[0] && routeToNavigate.legs[0].points) {
+        if (routeToNavigate?.legs?.[0]?.points) {
           console.log("Starting navigation with route:", routeToNavigate);
           
           // Nettoyer d'abord tout ce qui existe déjà
@@ -410,8 +414,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setLoadingMessage("Recalculating route...");
     
-    // In a real implementation, this would call the TomTom API to get a new route
-    // For now, we'll simulate a recalculation
+    // recalculation
     setTimeout(() => {
       setLoading(false);
       
@@ -424,6 +427,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   return (
     <NavigationContext.Provider value={{
+      showAllManeuvers,
+      setShowAllManeuvers,
       isRouteOptionsVisible,
       setRouteOptionsVisible,
       isRouteResultsVisible,

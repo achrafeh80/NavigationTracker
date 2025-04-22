@@ -42,8 +42,7 @@ export default function RouteResultsPanel() {
           if (map.getLayer('route')) map.removeLayer('route');
           if (map.getSource('route')) map.removeSource('route');
         } catch (e) {
-          // Ignorer les erreurs si les éléments n'existent pas
-          console.log("Éléments de carte précédents non trouvés, continuons...");
+          console.error("Éléments de carte précédents non trouvés, continuons...",e);
         }
         
         // Créer les coordonnées pour le tracé
@@ -197,7 +196,7 @@ export default function RouteResultsPanel() {
 
   return (
     <>
-      <div className="absolute left-4 top-40 bottom-28 w-80 bg-white rounded-lg shadow-md z-20 flex flex-col overflow-hidden">
+      <div className="absolute left-4 top-52 bottom-28 w-80 bg-white rounded-lg shadow-md z-20 flex flex-col overflow-hidden">
         <div className="bg-primary text-white py-3 px-4 flex justify-between items-center">
           <h2 className="font-medium">Routes</h2>
           <button onClick={handleCloseRoutePanel}>

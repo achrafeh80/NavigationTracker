@@ -5,10 +5,10 @@ import { Redirect, Route } from "wouter";
 export function ProtectedRoute({
   path,
   component: Component,
-}: {
+}: Readonly<{
   path: string;
   component: () => React.JSX.Element;
-}) {
+}>) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
