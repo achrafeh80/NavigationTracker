@@ -1,11 +1,13 @@
 import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { db } from "./db";
+
 
 declare global {
   namespace Express {
@@ -49,26 +51,27 @@ export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  passport.use(
-    new LocalStrategy(
-      {
-        usernameField: 'username',
-        passwordField: 'password'
-      },
-      async (username, password, done) => {
-        try {
-          const user = await storage.getUserByUsername(username);
-          if (!user || !(await comparePasswords(password, user.password))) {
-            return done(null, false, { message: 'Invalid username or password' });
-          }
-          return done(null, user);
-        } catch (error) {
-          return done(error);
-        }
-      }
-    )
-  );
-
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID!,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    callbackURL: "/auth/google/callback"
+  }, async (accessToken, refreshToken, profile, done) => {
+    const email = profile.emails?.[0]?.value;
+    if (!email) return done(null, false);
+  
+    let user = await db.query.users.findFirst({ where: { email } });
+    if (!user) {
+      user = await db.insert(users).values({
+        email,
+        name: profile.displayName,
+        oauthProvider: 'google',
+        role: 'USER',
+      }).returning().get();
+    }
+  
+    return done(null, user);
+  }));
+  
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
     try {

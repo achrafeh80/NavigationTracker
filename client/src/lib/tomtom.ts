@@ -122,7 +122,7 @@ export function createPopup(content: string): TTPopup {
   return new window.tt.Popup({
     closeButton: true,
     closeOnClick: true,
-    offset: 25
+    offset: 25,
   }).setHTML(content);
 }
 

@@ -4,7 +4,7 @@ import { IStorage } from "../storage";
 import { 
   Incident, 
   insertIncidentSchema, 
-  insertIncidentReactionSchema 
+  insertIncidentReactionSchema
 } from "@shared/schema";
 import { z } from "zod";
 
