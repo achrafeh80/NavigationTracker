@@ -83,22 +83,22 @@ export default function Sidebar() {
 
 
       {/* Footer */}
-      <div className="mt-auto p-4 border-t border-neutral-200 text-sm text-neutral-500">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start text-neutral-700 hover:bg-neutral-100"
-          onClick={handleLogout}
-          disabled={logoutMutation.isPending}
-        >
-          {logoutMutation.isPending ? (
-            <div className="flex items-center">
-              Logging out...
-            </div>
-          ) : (
-            "Logout"
-          )}
-        </Button>
-      </div>
+        <div className="mt-auto p-4 border-t border-neutral-200 text-sm text-neutral-500">
+          <Button
+            variant="ghost"
+            className="w-full justify-start bg-red-400 text-white font-medium rounded-lg shadow-sm transition-colors duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+          >
+            {logoutMutation.isPending ? (
+              <div className="flex items-center">
+                Logging out...
+              </div>
+            ) : (
+              "Logout"
+            )}
+          </Button>
+        </div>
     </aside>
   ) : null;
 }

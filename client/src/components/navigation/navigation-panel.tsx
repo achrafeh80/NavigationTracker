@@ -54,7 +54,7 @@ export default function NavigationPanel() {
         </div>
 
         {!collapsed && (
-          <div className="bg-white shadow-lg rounded-t-xl">
+          <div className="bg-white shadow-lg ">
             <div className="p-4">
               {/* Top Bar */}
               <div className="flex justify-between items-center mb-4">

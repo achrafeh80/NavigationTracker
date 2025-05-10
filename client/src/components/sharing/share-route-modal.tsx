@@ -105,7 +105,7 @@ export default function ShareRouteModal({ route, onClose }: ShareRouteModalProps
           </div>
           
           <p className="text-sm text-neutral-600 text-center">
-            Scan this QR code with your mobile device to open this route in the SupMap app
+            Scan this QR code with your mobile device to open this route in the app
           </p>
         </div>
         
