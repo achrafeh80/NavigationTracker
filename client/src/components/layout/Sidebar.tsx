@@ -9,7 +9,7 @@ import {
   BarChart2,
   Settings,
   Navigation,
-  Shield
+  Shield,
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -30,8 +30,9 @@ export default function Sidebar() {
     { name: 'Historique', path: '/history', icon: <History className="mr-3 h-5 w-5" /> },
     { name: 'Statistiques', path: '/statistics', icon: <BarChart2 className="mr-3 h-5 w-5" /> },
     { name: 'Paramètres', path: '/settings', icon: <Settings className="mr-3 h-5 w-5" /> },
-    { name: 'Admin', path: '/admin', icon: <Shield className="mr-3 h-5 w-5" /> }
-
+    ...(user?.role === 'admin'
+      ? [{ name: 'Admin', path: '/admin', icon: <Shield className="mr-3 h-5 w-5" /> }]
+      : [])
   ];
 
   return isOpen ? (

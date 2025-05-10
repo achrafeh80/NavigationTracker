@@ -5,9 +5,18 @@ import { setupAuth } from "./auth";
 import { insertIncidentSchema, insertVerificationSchema, insertRouteSchema } from "@shared/schema";
 import { randomBytes } from "crypto";
 import { WebSocketServer, WebSocket } from "ws";
+import { eq } from "drizzle-orm"; 
+import { users } from "../shared/schema";
+import bcrypt from "bcryptjs";
+
 
 // WebSocket clients
 const clients: Map<number, WebSocket> = new Map();
+
+export async function hashPassword(password: string): Promise<string> {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
@@ -61,6 +70,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
+
+
 
 // Users admin
 app.get('/api/users', async (req, res) => {
@@ -259,6 +270,8 @@ app.delete('/api/users/:id', async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   });
+
+  
 
   return httpServer;
 }

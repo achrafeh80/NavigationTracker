@@ -39,9 +39,6 @@ export default function NavBar() {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-48">
-            <Link href="/statistics">
-              <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
-            </Link>
             <Link href="/history">
               <DropdownMenuItem className="cursor-pointer">Historique</DropdownMenuItem>
             </Link>
@@ -51,6 +48,11 @@ export default function NavBar() {
             <Link href="/settings">
               <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
             </Link>
+            {user?.role === "admin" && (
+              <Link href="/admin"> 
+                <DropdownMenuItem className="cursor-pointer">Admin</DropdownMenuItem>
+              </Link>
+            )}
 
             <DropdownMenuSeparator />
 

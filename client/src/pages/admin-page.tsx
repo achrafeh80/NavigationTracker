@@ -100,14 +100,7 @@ export default function AdminPage() {
     setShowUserModal(true);
   };
   
-  const handleAddUser = () => {
-    setEditingUser(null);
-    setUserForm({
-      username: '',
-      email: ''
-    });
-    setShowUserModal(true);
-  };
+
   
   const handleUserFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,12 +215,6 @@ export default function AdminPage() {
               <section>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-800">Utilisateurs</h2>
-                  <button 
-                    onClick={handleAddUser}
-                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200"
-                  >
-                    <span className="mr-1">+</span> Ajouter un utilisateur
-                  </button>
                 </div>
                 
                 <div className="overflow-x-auto">

@@ -1,506 +1,308 @@
-import { useAuth } from '@/hooks/use-auth';
-import Sidebar from '@/components/layout/Sidebar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BarChart,
-  Bar,
+import { useEffect, useState } from "react";
+import Sidebar from "@/components/layout/Sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Loader2, AlertCircle, TrendingUp, Clock } from "lucide-react";
+import {
+  ResponsiveContainer,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
-} from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { Loader2, TrendingUp, AlertCircle, Clock } from 'lucide-react';
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function StatisticsPage() {
-  useAuth();
-  const { user } = useAuth();
-  console.log("User:", user);
+  const [incidentStats, setIncidentStats] = useState<any>(null);
+  const [userStats, setUserStats] = useState<any>(null);
+  const [predictionData, setPredictionData] = useState<any>(null);
+  const [loadingIncidentStats, setLoadingIncidentStats] = useState(true);
+  const [loadingUserStats, setLoadingUserStats] = useState(true);
+  const [loadingPrediction, setLoadingPrediction] = useState(true);
 
-  
-  // Define the type for incident statistics
-  interface IncidentStats {
-    byType: {
-      accident: number;
-      traffic: number;
-      police: number;
-      closed_road: number;
-      construction: number;
-      obstacle: number;
-    };
-    active: number;
-    resolved: number;
-    total: number;
-    last24Hours: number;
-    averageConfirmations: number;
-    averageRefutations: number;
-  }
-  
-  // Get incident statistics
-  const { 
-    data: incidentStats, 
-    isLoading: loadingIncidentStats 
-  } = useQuery<IncidentStats>({
-    queryKey: ['/api/statistics/incidents'],
-  });
-  
-  // Get user statistics
-  interface UserStats {
-    byType?: {
-      accident: number;
-      traffic: number;
-      police: number;
-      closed_road: number;
-      construction: number;
-      obstacle: number;
-    };
-    totalReported: number;
-    totalRoutes: number;
-  }
+  useEffect(() => {
+    apiRequest("/api/statistics/incidents")
+      .then((res) => setIncidentStats(res))
+      .finally(() => setLoadingIncidentStats(false));
 
-  const { 
-    data: userStats, 
-    isLoading: loadingUserStats 
-  } = useQuery<UserStats>({
-    queryKey: ['/api/statistics/user'],
-  });
-  
-  // Get traffic prediction data
-  interface PredictionData {
-    hourly: { hour: number; congestionRisk: number }[];
-    weekly: { day: string; congestionRisk: number }[];
-  }
+    apiRequest("/api/statistics/user")
+      .then((res) => setUserStats(res))
+      .finally(() => setLoadingUserStats(false));
 
-  const { 
-    data: predictionData, 
-    isLoading: loadingPrediction 
-  } = useQuery<PredictionData>({
-    queryKey: ['/api/statistics/prediction'],
-  });
-  
+    apiRequest("/api/statistics/prediction")
+      .then((res) => setPredictionData(res))
+      .finally(() => setLoadingPrediction(false));
+  }, []);
 
-  
-  // Prepare incident type data for pie chart
   const prepareIncidentTypeData = () => {
     if (!incidentStats?.byType) return [];
-    
     return [
-      { name: 'Accidents', value: incidentStats.byType.accident, color: '#F44336' },
-      { name: 'Embouteillages', value: incidentStats.byType.traffic, color: '#FFC107' },
-      { name: 'Contrôles', value: incidentStats.byType.police, color: '#2196F3' },
-      { name: 'Routes fermées', value: incidentStats.byType.closed_road, color: '#F44336' },
-      { name: 'Travaux', value: incidentStats.byType.construction, color: '#FF9800' },
-      { name: 'Obstacles', value: incidentStats.byType.obstacle, color: '#FFC107' }
+      { name: "Accidents", value: incidentStats.byType.accident, color: "#F44336" },
+      { name: "Embouteillages", value: incidentStats.byType.traffic, color: "#FFC107" },
+      { name: "Contrôles", value: incidentStats.byType.police, color: "#2196F3" },
+      { name: "Routes fermées", value: incidentStats.byType.closed_road, color: "#F44336" },
+      { name: "Travaux", value: incidentStats.byType.construction, color: "#FF9800" },
+      { name: "Obstacles", value: incidentStats.byType.obstacle, color: "#FFC107" },
     ];
   };
 
-  // Prepare status data for pie chart
   const prepareStatusData = () => {
     if (!incidentStats) return [];
-    
     return [
-      { name: 'Actifs', value: incidentStats.active, color: '#4CAF50' },
-      { name: 'Résolus', value: incidentStats.resolved, color: '#9E9E9E' }
+      { name: "Actifs", value: incidentStats.active, color: "#4CAF50" },
+      { name: "Résolus", value: incidentStats.resolved, color: "#9E9E9E" },
     ];
   };
-  
-  // Prepare user contribution data
+
   const prepareUserContributions = () => {
     if (!userStats?.byType) return [];
-    
     return [
-      { name: 'Accidents', count: userStats.byType.accident, color: '#F44336' },
-      { name: 'Embouteillages', count: userStats.byType.traffic, color: '#FFC107' },
-      { name: 'Contrôles', count: userStats.byType.police, color: '#2196F3' },
-      { name: 'Routes fermées', count: userStats.byType.closed_road, color: '#F44336' },
-      { name: 'Travaux', count: userStats.byType.construction, color: '#FF9800' },
-      { name: 'Obstacles', count: userStats.byType.obstacle, color: '#FFC107' }
+      { name: "Accidents", count: userStats.byType.accident, color: "#F44336" },
+      { name: "Embouteillages", count: userStats.byType.traffic, color: "#FFC107" },
+      { name: "Contrôles", count: userStats.byType.police, color: "#2196F3" },
+      { name: "Routes fermées", count: userStats.byType.closed_road, color: "#F44336" },
+      { name: "Travaux", count: userStats.byType.construction, color: "#FF9800" },
+      { name: "Obstacles", count: userStats.byType.obstacle, color: "#FFC107" },
     ];
   };
-  
-  // Format number with leading zeros
-  const formatHour = (hour: number) => {
-    return `${hour}:00`;
-  };
+
+  const formatHour = (hour: number) => `${hour}:00`;
 
   return (
     <div className="flex h-screen w-full overflow-auto bg-neutral-50">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
-        <div className={`p-6 pt-16'}`}>
-        <div className="max-w-6xl mx-auto">
-            <h1 className="text-3xl font-heading font-bold text-neutral-900 mb-6">Statistiques</h1>
-            
-            <Tabs defaultValue="traffic" className="w-full">
-              <TabsList className="w-full grid grid-cols-3">
+        <div className="p-6 pt-16">
+          <div className="max-w-6xl mx-auto">
+            <h1 className="text-3xl font-bold mb-6">Statistiques</h1>
+
+            <Tabs defaultValue="traffic">
+              <TabsList className="grid grid-cols-3 mb-4">
                 <TabsTrigger value="traffic">Trafic</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="user">Mes contributions</TabsTrigger>
               </TabsList>
-              
-              {/* Traffic Tab */}
-              <TabsContent value="traffic" className="mt-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              {/* Tab 1: Trafic */}
+              <TabsContent value="traffic">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Embouteillages actuels</CardTitle>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <CardHeader>
+                      <CardTitle>Embouteillages actuels</CardTitle>
+                      <CardDescription>+{incidentStats?.last24Hours || 0} en 24h</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
-                        {loadingIncidentStats ? <Loader2 className="h-4 w-4 animate-spin" /> : incidentStats?.byType.traffic || 0}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        +{loadingIncidentStats ? '...' : incidentStats?.last24Hours || 0} en 24h
+                      <p className="text-2xl font-bold">
+                        {loadingIncidentStats ? <Loader2 className="animate-spin" /> : incidentStats?.byType.traffic || 0}
                       </p>
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Incidents actifs</CardTitle>
-                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                    <CardHeader>
+                      <CardTitle>Incidents actifs</CardTitle>
+                      <CardDescription>Sur {incidentStats?.total || 0}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
-                        {loadingIncidentStats ? <Loader2 className="h-4 w-4 animate-spin" /> : incidentStats?.active || 0}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Sur {loadingIncidentStats ? '...' : incidentStats?.total || 0} incidents signalés
+                      <p className="text-2xl font-bold">
+                        {loadingIncidentStats ? <Loader2 className="animate-spin" /> : incidentStats?.active || 0}
                       </p>
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Temps moyen</CardTitle>
-                      <Clock className="h-4 w-4 text-muted-foreground" />
+                    <CardHeader>
+                      <CardTitle>Temps moyen</CardTitle>
+                      <CardDescription>Temps estimé en plus</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">+23 min</div>
-                      <p className="text-xs text-muted-foreground">
-                        Temps supplémentaire moyen dû au trafic
-                      </p>
+                      <p className="text-2xl font-bold">+23 min</p>
                     </CardContent>
                   </Card>
                 </div>
-                
-                {/* Traffic Prediction */}
-                <Card className="col-span-3">
+
+                {/* Graphiques */}
+                <Card className="mb-6">
                   <CardHeader>
-                    <CardTitle>Prévisions de trafic par heure</CardTitle>
-                    <CardDescription>
-                      Probabilité d'embouteillages selon l'heure de la journée
-                    </CardDescription>
+                    <CardTitle>Prédiction horaire</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {loadingPrediction ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <LineChart
-                          data={predictionData?.hourly}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="hour" 
-                            tickFormatter={formatHour}
-                          />
-                          <YAxis
-                            label={{ 
-                              value: 'Risque de congestion (%)', 
-                              angle: -90, 
-                              position: 'insideLeft' 
-                            }}
-                          />
-                          <Tooltip 
-                            formatter={(value) => [`${value}%`, 'Risque de congestion']}
-                            labelFormatter={(label) => `${label}:00`}
-                          />
-                          <Legend />
-                          <Line 
-                            type="monotone" 
-                            dataKey="congestionRisk" 
-                            name="Risque de congestion" 
-                            stroke="#1976D2" 
-                            activeDot={{ r: 8 }} 
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    )}
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={predictionData?.hourly || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="hour" tickFormatter={formatHour} />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="congestionRisk" stroke="#1976D2" />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </CardContent>
                 </Card>
-                
-                {/* Weekly Prediction */}
-                <Card className="col-span-3">
-                  <CardHeader>
-                    <CardTitle>Prévisions de trafic par jour</CardTitle>
-                    <CardDescription>
-                      Probabilité d'embouteillages selon le jour de la semaine
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {loadingPrediction ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart
-                          data={predictionData?.weekly}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="day" />
-                          <YAxis 
-                            label={{ 
-                              value: 'Risque de congestion (%)', 
-                              angle: -90, 
-                              position: 'insideLeft' 
-                            }}
-                          />
-                          <Tooltip formatter={(value) => [`${value}%`, 'Risque de congestion']} />
-                          <Legend />
-                          <Bar 
-                            dataKey="congestionRisk" 
-                            name="Risque de congestion" 
-                            fill="#1976D2" 
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              {/* Incidents Tab */}
-              <TabsContent value="incidents" className="mt-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Incidents by Type */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Types d'incidents signalés</CardTitle>
-                      <CardDescription>
-                        Répartition des incidents par catégorie
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex justify-center">
-                      {loadingIncidentStats ? (
-                        <div className="flex justify-center py-8">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                      ) : (
-                        <ResponsiveContainer width="100%" height={300}>
-                          <PieChart>
-                            <Pie
-                              data={prepareIncidentTypeData()}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                              outerRadius={80}
-                              fill="#8884d8"
-                              dataKey="value"
-                            >
-                              {prepareIncidentTypeData().map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                            <Tooltip formatter={(value) => [value, 'Nombre d\'incidents']} />
-                            <Legend />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      )}
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Incidents Status */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Statut des incidents</CardTitle>
-                      <CardDescription>
-                        Incidents actifs vs résolus
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex justify-center">
-                      {loadingIncidentStats ? (
-                        <div className="flex justify-center py-8">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                      ) : (
-                        <ResponsiveContainer width="100%" height={300}>
-                          <PieChart>
-                            <Pie
-                              data={prepareStatusData()}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                              outerRadius={80}
-                              fill="#8884d8"
-                              dataKey="value"
-                            >
-                              {prepareStatusData().map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                            <Tooltip formatter={(value) => [value, 'Nombre d\'incidents']} />
-                            <Legend />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                {/* Incident Confirmations */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Taux de confirmation</CardTitle>
-                    <CardDescription>
-                      Moyenne des confirmations et réfutations par incident
-                    </CardDescription>
+                    <CardTitle>Prédiction hebdomadaire</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {loadingIncidentStats ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart
-                          data={[
-                            { 
-                              name: 'Confirmations', 
-                              value: incidentStats?.averageConfirmations || 0,
-                              color: '#4CAF50'
-                            },
-                            { 
-                              name: 'Réfutations', 
-                              value: incidentStats?.averageRefutations || 0,
-                              color: '#F44336'
-                            }
-                          ]}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis
-                            label={{ 
-                              value: 'Moyenne par incident', 
-                              angle: -90, 
-                              position: 'insideLeft' 
-                            }}
-                          />
-                          <Tooltip />
-                          <Bar dataKey="value" name="Moyenne">
-                            {[
-                              { name: 'Confirmations', value: 0, color: '#4CAF50' },
-                              { name: 'Réfutations', value: 0, color: '#F44336' }
-                            ].map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    )}
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={predictionData?.weekly || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="day" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="congestionRisk" fill="#1976D2" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </CardContent>
                 </Card>
               </TabsContent>
-              
-              {/* User Tab */}
-              <TabsContent value="user" className="mt-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              {/* Tab 2: Incidents */}
+              <TabsContent value="incidents">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Incidents signalés</CardTitle>
-                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                    <CardHeader>
+                      <CardTitle>Types d'incidents</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
-                        {loadingUserStats ? <Loader2 className="h-4 w-4 animate-spin" /> : userStats?.totalReported || 0}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Incidents que vous avez signalés
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={prepareIncidentTypeData()}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            dataKey="value"
+                          >
+                            {prepareIncidentTypeData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Actifs vs Résolus</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={prepareStatusData()}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            dataKey="value"
+                          >
+                            {prepareStatusData().map((entry, index) => (
+                              <Cell key={`cell-status-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Confirmations & Réfutations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart
+                        data={[
+                          { name: "Confirmations", value: incidentStats?.averageConfirmations || 0, color: "#4CAF50" },
+                          { name: "Réfutations", value: incidentStats?.averageRefutations || 0, color: "#F44336" },
+                        ]}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value">
+                          <Cell fill="#4CAF50" />
+                          <Cell fill="#F44336" />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Tab 3: Utilisateur */}
+              <TabsContent value="user">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Incidents signalés</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-2xl font-bold">
+                        {loadingUserStats ? <Loader2 className="animate-spin" /> : userStats?.totalReported || 0}
                       </p>
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Itinéraires calculés</CardTitle>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <CardHeader>
+                      <CardTitle>Itinéraires enregistrés</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
-                        {loadingUserStats ? <Loader2 className="h-4 w-4 animate-spin" /> : userStats?.totalRoutes || 0}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Itinéraires que vous avez utilisés
+                      <p className="text-2xl font-bold">
+                        {loadingUserStats ? <Loader2 className="animate-spin" /> : userStats?.totalRoutes || 0}
                       </p>
                     </CardContent>
                   </Card>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Score de contribution</CardTitle>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <CardHeader>
+                      <CardTitle>Score de contribution</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
-                        {loadingUserStats ? <Loader2 className="h-4 w-4 animate-spin" /> : (userStats?.totalReported ?? 0) * 10}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Points basés sur vos contributions
+                      <p className="text-2xl font-bold">
+                        {(userStats?.totalReported || 0) * 10}
                       </p>
                     </CardContent>
                   </Card>
                 </div>
-                
-                {/* User Contributions by Type */}
+
                 <Card>
                   <CardHeader>
                     <CardTitle>Mes signalements par type</CardTitle>
-                    <CardDescription>
-                      Types d'incidents que vous avez signalés
-                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {loadingUserStats ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart
-                          data={prepareUserContributions()}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis
-                            label={{ 
-                              value: 'Nombre de signalements', 
-                              angle: -90, 
-                              position: 'insideLeft' 
-                            }}
-                          />
-                          <Tooltip />
-                          <Bar dataKey="count" name="Signalements">
-                            {prepareUserContributions().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    )}
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={prepareUserContributions()}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="count">
+                          {prepareUserContributions().map((entry, index) => (
+                            <Cell key={`user-cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                   </CardContent>
                 </Card>
               </TabsContent>
