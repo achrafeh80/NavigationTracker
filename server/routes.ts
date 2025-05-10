@@ -38,7 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     ws.on('close', () => {
       // Remove client from map when disconnected
-      for (const [userId, client] of clients.entries()) {
+      for (const [userId, client] of Array.from(clients.entries())) {
         if (client === ws) {
           clients.delete(userId);
           console.log(`User ${userId} disconnected from WebSocket`);
@@ -61,6 +61,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
+
+// Users admin
+app.get('/api/users', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+  try {
+    const allUsers = await storage.getAllUsers();
+    // Ne pas retourner les mots de passe
+    const safeUsers = allUsers.map(u => ({ ...u, password: undefined }));
+    res.status(200).json(safeUsers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.put('/api/users/:id', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+  try {
+    const userId = Number(req.params.id);
+    const data = req.body; // { username?, email?, name? }
+    await storage.updateUser(userId, data);
+    res.status(200).json({ message: 'User updated' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+  try {
+    const userId = Number(req.params.id);
+    await storage.deleteUser(userId);
+    res.status(200).json({ message: 'User deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+  // Incidents admin
+  app.get('/api/admin/incidents', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    try {
+      const allIncidents = await storage.getAllIncidents();  // à implémenter, retourne incidents actifs + inactifs
+      res.status(200).json(allIncidents);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.put('/api/incidents/:id', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    try {
+      const incidentId = Number(req.params.id);
+      const data = req.body; // { active?: boolean, type?: string, comment?: string }
+      await storage.updateIncident(incidentId, data);
+      res.status(200).json({ message: 'Incident updated' });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.delete('/api/incidents/:id', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    try {
+      const incidentId = Number(req.params.id);
+      await storage.deleteIncident(incidentId);
+      res.status(200).json({ message: 'Incident deleted' });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Routes admin
+  app.get('/api/admin/routes', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    try {
+      const allRoutes = await storage.getAllRoutes();
+      res.status(200).json(allRoutes);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
 
   // Incidents API
   app.post('/api/incidents', async (req: Request, res: Response) => {
@@ -128,6 +210,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Routes API
   app.post('/api/routes', async (req: Request, res: Response) => {
+      const { origin, destination, routeData } = req.body;
+
     if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
 
     try {

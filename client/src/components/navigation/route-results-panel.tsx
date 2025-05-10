@@ -16,7 +16,9 @@ export default function RouteResultsPanel() {
     selectedRouteIndex, 
     setSelectedRouteIndex,
     setRouteResultsVisible,
-    startNavigation
+    startNavigation,
+    originCoords,
+    destinationCoords
   } = useNavigationContext();
   const { map } = useMapContext();
   
@@ -148,9 +150,26 @@ export default function RouteResultsPanel() {
         };
         
         // Créer un objet avec l'origine et la destination au format texte
-        const origin = `${selectedRoute.legs[0].points[0].latitude},${selectedRoute.legs[0].points[0].longitude}`;
-        const destination = `${selectedRoute.legs[0].points[selectedRoute.legs[0].points.length - 1].latitude},${selectedRoute.legs[0].points[selectedRoute.legs[0].points.length - 1].longitude}`;
-        
+const startPoint = selectedRoute.legs[0].points[0];
+const endPoint = selectedRoute.legs[0].points[selectedRoute.legs[0].points.length - 1];
+
+const originLat = startPoint.latitude ?? startPoint.lat;
+const originLng = startPoint.longitude ?? startPoint.lng;
+const destLat = endPoint.latitude ?? endPoint.lat;
+const destLng = endPoint.longitude ?? endPoint.lng;
+
+if (!originLat || !originLng || !destLat || !destLng) {
+  toast({
+    title: "Coordonnées manquantes",
+    description: "Impossible de lire les points de départ ou d'arrivée.",
+    variant: "destructive"
+  });
+  return;
+}
+
+const origin = `${originLat},${originLng}`;
+const destination = `${destLat},${destLng}`;
+
         // Générer un code de partage aléatoire (12 caractères hexadécimaux)
         const generateShareCode = () => {
           const chars = '0123456789abcdef';

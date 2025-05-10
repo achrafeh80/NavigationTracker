@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMapContext } from "@/context/map-context";
 import { createIncidentMarker, createPopup } from "@/lib/tomtom";
 import { Incident } from "@shared/schema";
+import { useIncidentsContext } from "@/context/incidents-context";
 
 interface IncidentMarkersProps {
   incidents: Incident[];
@@ -9,56 +10,56 @@ interface IncidentMarkersProps {
 
 export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
   const { map } = useMapContext();
+  const { verifyIncident } = useIncidentsContext(); // ✅ CONTEXTE
   const [markers, setMarkers] = useState<any[]>([]);
 
-  // Create or update markers when incidents change
   useEffect(() => {
     if (!map || !incidents.length) return;
 
-    // Clear existing markers
     markers.forEach(marker => marker.remove());
-    
-    // Create new markers for each incident
+
     const newMarkers = incidents.map(incident => {
+      const hasResponded = localStorage.getItem(`incident_${incident.id}_responded`);
+
+      const confirmIcon = hasResponded
+        ? '✅'
+        : `<span id="confirm-${incident.id}" style="cursor:pointer;">✅</span>`;
+
+      const refuteIcon = hasResponded
+        ? '❌'
+        : `<span id="refute-${incident.id}" style="cursor:pointer;">❌</span>`;
+
+      const popupContent = `
+        <div class="p-3 w-[220px] text-sm font-sans">
+          <div class="font-semibold text-base text-black dark:text-white mb-1">
+            ${formatIncidentType(incident.type)}
+          </div>
+          <div class="text-gray-500 dark:text-gray-300 mb-2">
+            ${formatTimestamp(incident.createdAt)}
+          </div>
+          ${incident.comment ? `<div class="text-gray-800 italic mb-2">"${incident.comment}"</div>` : ''}
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex items-center gap-1 text-green-600">
+              <span id="confirm-${incident.id}" style="cursor:pointer;">✅</span>
+              <span>${incident.confirmed}</span>
+            </div>
+            <div class="flex items-center gap-1 text-red-600">
+              <span id="refute-${incident.id}" style="cursor:pointer;">❌</span>
+              <span>${incident.refuted}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
       const marker = createIncidentMarker(
         map,
         [parseFloat(incident.longitude), parseFloat(incident.latitude)],
         incident.type
       );
-      
-      // Create and attach popup
-      const popupContent = `
-      <div class="p-3 w-[220px] text-sm font-sans">
-        <div class="font-semibold text-base text-black dark:text-white mb-1">
-          ${formatIncidentType(incident.type)}
-        </div>
-        <div class="text-gray-500 dark:text-gray-300 mb-2">
-          ${formatTimestamp(incident.createdAt)}
-        </div>
-        ${incident.comment ? `
-          <div class="text-gray-800 dark:text-gray-100 italic mb-2 border-l-2 pl-2 border-primary">
-            "${incident.comment}"
-          </div>
-        ` : ''}
-        <div class="flex items-center justify-between mt-2">
-          <div class="flex items-center gap-1 text-green-600">
-            <span class="material-icons text-sm">thumb_up</span>
-            <span>${incident.confirmed}</span>
-          </div>
-          <div class="flex items-center gap-1 text-red-600">
-            <span class="material-icons text-sm">thumb_down</span>
-            <span>${incident.refuted}</span>
-          </div>
-        </div>
-      </div>
-    `;
-    
-      
+
       const popup = createPopup(popupContent);
-      
       marker.setPopup(popup);
-      
-      // Add click event to show popup
+
       marker.getElement().addEventListener('click', () => {
         if (marker.isPopupOpen()) {
           marker.closePopup();
@@ -66,20 +67,36 @@ export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
           marker.openPopup();
         }
       });
-      
-      
+
+      popup.on('open', () => {
+        if (hasResponded) return;
+
+        const confirmBtn = document.getElementById(`confirm-${incident.id}`);
+        const refuteBtn = document.getElementById(`refute-${incident.id}`);
+
+        confirmBtn?.addEventListener('click', () => {
+          verifyIncident(incident.id, true);
+          popup.setHTML(`<div class="p-2 text-center font-medium">✅ Merci pour ta contribution !</div>`);
+          localStorage.setItem(`incident_${incident.id}_responded`, 'true');
+        });
+
+        refuteBtn?.addEventListener('click', () => {
+          verifyIncident(incident.id, false);
+          popup.setHTML(`<div class="p-2 text-center font-medium">✅ Merci pour ta contribution !</div>`);
+          localStorage.setItem(`incident_${incident.id}_responded`, 'true');
+        });
+      });
+
       return marker;
     });
-    
+
     setMarkers(newMarkers);
-    
-    // Cleanup function
+
     return () => {
       newMarkers.forEach(marker => marker.remove());
     };
   }, [map, incidents]);
 
-  // Helper function to format incident type
   function formatIncidentType(type: string): string {
     const typeMap: Record<string, string> = {
       'accident': 'Accident',
@@ -89,17 +106,15 @@ export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
       'hazard': 'Road Hazard',
       'other': 'Other Issue'
     };
-    
     return typeMap[type] || 'Incident';
   }
 
-  // Helper function to format timestamp
   function formatTimestamp(timestamp: string | Date): string {
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
-    
+
     if (diffMins < 1) {
       return 'Just now';
     } else if (diffMins < 60) {
@@ -112,5 +127,5 @@ export default function IncidentMarkers({ incidents }: IncidentMarkersProps) {
     }
   }
 
-  return null; // Markers are added directly to the map
+  return null;
 }

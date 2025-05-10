@@ -10,8 +10,10 @@ export function getQRCodeUrl(data: string, size: number): string {
   return `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(data)}&size=${size}x${size}`;
 }
 
-export function getWebSocketUrl(): string {
-  const port = import.meta.env.VITE_WS_PORT || 5000;
-  const token = localStorage.getItem("token");
-  return `ws://localhost:5000/?token=${token}`;
+export const getWebSocketUrl = (token: string) => {
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws"
+  const host = window.location.hostname
+  const port = import.meta.env.VITE_WS_PORT
+
+  return `${protocol}://${host}:${port}/?token=${token}`
 }

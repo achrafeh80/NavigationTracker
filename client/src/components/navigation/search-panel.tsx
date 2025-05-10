@@ -11,7 +11,9 @@ export default function SearchPanel() {
   const [origin, setOrigin] = useState("Current Location");
   const [destination, setDestination] = useState("");
   const [searching, setSearching] = useState(false);
-  const [routeOptions, setRouteOptions] = useState<string>("fastest");
+  const [routeOptions, setRouteOptions] = useState<'fastest' | 'shortest' | 'eco'>('fastest');
+  const [transportMode, setTransportMode] = useState<'car' | 'bike' | 'foot'>('car');
+
   
   // Auto-suggestion state
   const [originSuggestions, setOriginSuggestions] = useState<any[]>([]);
@@ -31,7 +33,7 @@ export default function SearchPanel() {
     setRouteResultsVisible,
     setLoading,
     setLoadingMessage,
-    calculateRoutes
+    calculateRoutes, 
   } = useNavigationContext();
   
   const { toast } = useToast();
@@ -310,6 +312,33 @@ export default function SearchPanel() {
             <span>Search</span>
           </Button>
         </div>
+
+            <div className="mt-3">
+              <label className="text-sm font-medium mr-2">Mode :</label>
+              <Button 
+                variant={transportMode === "car" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setTransportMode("car")}
+              >
+                Car
+              </Button>
+              <Button 
+                variant={transportMode === "bike" ? "default" : "outline"} 
+                size="sm"
+                className="mx-2"
+                onClick={() => setTransportMode("bike")}
+              >
+                Bike
+              </Button>
+              <Button 
+                variant={transportMode === "foot" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setTransportMode("foot")}
+              >
+                Foot
+              </Button>
+            </div>
+       
 
         {/* Route Options */}
         {isRouteOptionsVisible && (

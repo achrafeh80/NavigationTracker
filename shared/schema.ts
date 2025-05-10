@@ -8,7 +8,8 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email").notNull().unique(),
-  name: text("name"), // Optional field
+  name: text("name"), 
+  role: text('role').default('user'),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -17,6 +18,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   email: true,
   name: true,
+  role: true,
 });
 
 // Incidents table
@@ -63,7 +65,7 @@ export const routes = pgTable("routes", {
   userId: integer("user_id").notNull(),
   origin: text("origin").notNull(),
   destination: text("destination").notNull(),
-  routeData: jsonb("route_data").notNull(), // store TomTom route data
+  routeData: jsonb("route_data").notNull(), 
   avoidTolls: boolean("avoid_tolls").default(false).notNull(),
   avoidHighways: boolean("avoid_highways").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

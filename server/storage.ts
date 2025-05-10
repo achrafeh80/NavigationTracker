@@ -67,6 +67,29 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+    async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+  async deleteUser(userId: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, userId));
+  }
+  async updateUser(userId: number, data: Partial<User>): Promise<void> {
+    await db.update(users).set(data).where(eq(users.id, userId));
+  }
+  async getAllIncidents(): Promise<Incident[]> {
+    return await db.select().from(incidents);
+  }
+  async updateIncident(incidentId: number, data: Partial<Incident>): Promise<void> {
+    await db.update(incidents).set(data).where(eq(incidents.id, incidentId));
+  }
+  async deleteIncident(incidentId: number): Promise<void> {
+    await db.delete(incidents).where(eq(incidents.id, incidentId));
+  }
+  async getAllRoutes(): Promise<Route[]> {
+    return await db.select().from(routes);
+  }
+
+
   // Incident operations
   async createIncident(incident: InsertIncident): Promise<Incident> {
     const [newIncident] = await db.insert(incidents).values(incident).returning();

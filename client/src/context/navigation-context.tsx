@@ -18,6 +18,9 @@ interface NavigationContextType {
   activeRoute: any | null;
   showAllManeuvers: boolean;
   setShowAllManeuvers: (visible: boolean) => void;
+  originCoords: [number, number] | null;
+  destinationCoords: [number, number] | null;
+
   
   // Loading state
   isLoading: boolean;
@@ -50,6 +53,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
   const [activeRoute, setActiveRoute] = useState<any | null>(null);
   const [showAllManeuvers, setShowAllManeuvers] = useState(false);
+  const [originCoords, setOriginCoords] = useState<[number, number] | null>(null);
+  const [destinationCoords, setDestinationCoords] = useState<[number, number] | null>(null);
+
   
   // Loading state
   const [isLoading, setLoading] = useState(false);
@@ -62,7 +68,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const calculateRoutes = useCallback(async (
     origin: [number, number],
     destination: [number, number],
-    options?: RouteOptions
+    options?: RouteOptions,
   ) => {
     if (!map) {
       toast({
@@ -78,7 +84,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       setLoadingMessage("Calculating routes...");
       
       // Calculate route using TomTom API
-      const routeResponse = await calculateRoute(origin, destination, options);
+      const routeResponse = await calculateRoute(origin, destination, options, );
       const calculatedRoutes = routeResponse.routes || [];
       
       if (calculatedRoutes.length === 0) {
@@ -87,6 +93,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       
       // Store routes and select the first one
       setRoutes(calculatedRoutes);
+      setOriginCoords(origin);
+      setDestinationCoords(destination);
       setSelectedRouteIndex(0);
       
       // Draw the first route on the map
@@ -433,6 +441,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       setRouteOptionsVisible,
       isRouteResultsVisible,
       setRouteResultsVisible,
+      originCoords,
+      destinationCoords,
       isNavigationActive,
       routes,
       selectedRouteIndex,
