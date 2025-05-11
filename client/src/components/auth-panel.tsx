@@ -116,6 +116,7 @@ export default function AuthPanel() {
                       type="button" 
                       className="flex-1 flex items-center justify-center gap-2 bg-[#4285F4] hover:bg-[#3367D6]"
                       variant="default"
+                      onClick={() => window.location.href = "/auth/google"}
                     >
                       <span className="material-icons text-sm">login</span>
                       Google
@@ -124,6 +125,7 @@ export default function AuthPanel() {
                       type="button" 
                       className="flex-1 flex items-center justify-center gap-2 bg-[#1877F2] hover:bg-[#166FE5]"
                       variant="default"
+                      onClick={() => window.location.href = "/auth/facebook"}
                     >
                       <span className="material-icons text-sm">login</span>
                       Facebook

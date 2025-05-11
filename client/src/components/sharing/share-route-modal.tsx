@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Facebook, Mail, Share2, MessageCircle } from "lucide-react";
 import QRCode from "qrcode";
 
 interface ShareRouteModalProps {
@@ -24,14 +23,15 @@ export default function ShareRouteModal({ route, onClose }: ShareRouteModalProps
   setShareUrl(mapsUrl);
 
   // Générer le QR code pour l'URL Google Maps
-  const qrCanvas = document.getElementById('qr-code') as HTMLCanvasElement;
-  if (qrCanvas) {
-    QRCode.toCanvas(qrCanvas, mapsUrl, { width: 200, margin: 1, color: { dark: "#000000", light: "#FFFFFF" }}, 
-      (error) => {
-        if (!error) setQrGenerated(true);
-        else console.error('Error generating QR code:', error);
-      });
-  }
+    const qrCanvas = document.getElementById('qr-code') as HTMLCanvasElement;
+    if (qrCanvas) {
+        QRCode.toCanvas(qrCanvas, mapsUrl, { width: 200, margin: 1, color: { dark: "#000000", light: "#FFFFFF" }}, 
+          (error) => {
+            if (!error) setQrGenerated(true);
+            else console.error('Error generating QR code:', error);
+          }
+        );
+    }
 }, [route]);
 
 
@@ -45,16 +45,15 @@ export default function ShareRouteModal({ route, onClose }: ShareRouteModalProps
         
         <div className="flex flex-col items-center mb-4">
           {/* QR Code */}
-          <div className="w-52 h-52 bg-neutral-100 flex items-center justify-center mb-4 border border-neutral-300">
-            {!qrGenerated ? (
-              <div className="text-center">
-                <span className="material-icons text-3xl text-neutral-400">qr_code_2</span>
-                <p className="text-sm text-neutral-500 mt-2">Generating QR code...</p>
-              </div>
-            ) : (
-              <canvas id="qr-code"></canvas>
-            )}
-          </div>
+            <div className="w-52 h-52 relative bg-neutral-100 flex items-center justify-center mb-4 border border-neutral-300">
+              <canvas id="qr-code" width="200" height="200" className={`${!qrGenerated ? 'hidden' : ''}`}></canvas>
+              {!qrGenerated && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="material-icons text-3xl text-neutral-400">qr_code_2</span>
+                  <p className="text-sm text-neutral-500 mt-2">Generating QR code...</p>
+                </div>
+              )}
+            </div>
           
           <p className="text-sm text-neutral-600 text-center">
             Scan this QR code with your mobile device to open this route in the app

@@ -164,6 +164,8 @@ export default function SearchPanel() {
         destCoords as [number, number],
         {
           routeType: routeOptions as 'fastest' | 'shortest' | 'eco',
+          transportMode: transportMode
+
         }
       );
 

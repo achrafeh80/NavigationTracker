@@ -86,6 +86,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       // Calculate route using TomTom API
       const routeResponse = await calculateRoute(origin, destination, options, );
       const calculatedRoutes = routeResponse.routes || [];
+
+      if (options?.transportMode === 'bike' || options?.transportMode === 'foot') {
+          const factor = options.transportMode === 'bike' ? 3 : 12;
+          calculatedRoutes.forEach((route: any) => {
+          route.summary.lengthInMeters *= factor;
+          route.summary.travelTimeInSeconds *= factor;
+          });
+        }
       
       if (calculatedRoutes.length === 0) {
         throw new Error("No routes found between these locations");

@@ -22,6 +22,8 @@
    At the root of the project, create a `.env` file with the necessary environment variables.  
    Make sure to add your [TomTom API key](https://developer.tomtom.com/):
 
+   ajoute .env dans le client = VITE_WS_PORT=5000
+   
    ```
    TOMTOM_API_KEY=your_api_key_here
    DATABASE_URL=postgres://postgres:postgres@localhost:5432/navigationtracker

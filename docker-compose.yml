@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: navigationtracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/navigationtracker
+      TOMTOM_API_KEY: ta_clé_tomtom
+      GOOGLE_CLIENT_ID: ton_id_google
+      GOOGLE_CLIENT_SECRET: ton_secret_google
+      FACEBOOK_CLIENT_ID: ton_id_facebook
+      FACEBOOK_CLIENT_SECRET: ton_secret_facebook
+      SESSION_SECRET: un_secret_session
+    command: npm run dev
+
+volumes:
+  db_data:

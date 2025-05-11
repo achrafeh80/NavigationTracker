@@ -131,6 +131,7 @@ export interface RouteOptions {
   avoidTolls?: boolean;
   avoidHighways?: boolean;
   routeType?: 'fastest' | 'shortest' | 'eco';
+  transportMode?: 'car' | 'bike' | 'foot';
 }
 
 export async function calculateRoute(

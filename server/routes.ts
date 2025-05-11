@@ -8,6 +8,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { eq } from "drizzle-orm"; 
 import { users } from "../shared/schema";
 import bcrypt from "bcryptjs";
+import passport from "passport";
 
 
 // WebSocket clients
@@ -70,6 +71,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
+
+// Initialiser le login Google
+app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
+
+// Callback de Google OAuth
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/auth?error=google' }),
+  (req: Request, res: Response) => {
+    // Succès : rediriger vers la page d’accueil ou une page de confirmation
+    res.redirect('/');
+  }
+);
+
+// Initialiser le login Facebook
+app.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+
+// Callback de Facebook OAuth
+app.get('/auth/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/auth?error=facebook' }),
+  (req: Request, res: Response) => {
+    res.redirect('/');
+  }
+);
 
 
 

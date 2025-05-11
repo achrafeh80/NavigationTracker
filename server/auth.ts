@@ -6,6 +6,9 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as FacebookStrategy } from 'passport-facebook';
+
 
 declare global {
   namespace Express {
@@ -48,6 +51,59 @@ export function setupAuth(app: Express) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+
+
+      // Google OAuth Strategy
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        callbackURL: process.env.OAUTH_CALLBACK_URL + "/auth/google/callback"
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          // Rechercher ou créer l'utilisateur correspondant au profil Google
+          const email = profile.emails?.[0]?.value;
+          let user = await storage.getUserByEmail(email ?? "");
+          if (!user) {
+            // Créer un nouvel utilisateur avec les infos du profil Google
+            user = await storage.createUser({
+              username: profile.displayName || profile.username,
+              email: email,
+              password: undefined  // utilisateur OAuth (pas de mot de passe local)
+            });
+          }
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
+      }
+    ));
+
+    // Facebook OAuth Strategy
+    passport.use(new FacebookStrategy({
+        clientID: process.env.FACEBOOK_CLIENT_ID!,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+        callbackURL: process.env.OAUTH_CALLBACK_URL + "/auth/facebook/callback",
+        profileFields: ['id', 'displayName', 'emails'] // demander l'email et le nom
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value;
+          let user = await storage.getUserByEmail(email);
+          if (!user) {
+            user = await storage.createUser({
+              username: profile.displayName || profile.username,
+              email: email,
+              password: undefined
+            });
+          }
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
+      }
+    ));
+
 
   passport.use(
     new LocalStrategy(
